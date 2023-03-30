@@ -17,25 +17,28 @@ export class UsersController {
   
   @Post()
   async createUser(@Body() dto: CreateUserDto): Promise<void> {
-    console.log(dto);
+    const {name, email, password} = dto;
+    await this.usersService.createUser(name, email, password);
   }
 
   @Post('/email-verify')
   async verifyEmail(@Query() dto: VerifyEmailDto): Promise<string> {
     console.log(dto);
-    return '';
+    const { signupVerifyToken } = dto;
+    return await this.usersService.verifyEmail(signupVerifyToken);
   }
 
   @Post('/login')
   async login(@Query() dto: UserLoginDto): Promise<string> {
     console.log(dto);
-    return '';
+    const { email, password } = dto;
+    return await this.usersService.login(email, password);
   }
 
   @Get(':id')
   async getUserInfo(@Param('id') id: string): Promise<string> {
     return this.usersService.findOne(id);
-  }
+  }  
 }
 
   // // 리다이렉션 이용시 데코레이터에 url, statusCode 삽입

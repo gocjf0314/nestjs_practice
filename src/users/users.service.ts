@@ -55,11 +55,11 @@ export class UsersService {
     throw new Error('Method not imoplmented.');
   }
 
-  findAll() {
-    return `This action returns all users`;
+  findAll(offset: number, limit: number) {
+    return `This action returns all users(offset ${offset}, limit: ${limit})`;
   }
 
-  findOne(id: string) {
+  findOne(id: number) {
     return `This action returns a #${id} user`;
   }
 

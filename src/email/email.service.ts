@@ -29,9 +29,10 @@ export class EmailService {
     emailAddress: string,
     signupVerifyToken: string,
   ): Promise<void> {
-    console.log(this.transporter);
     const baseUrl = this.config.baseUrl;
+
     const url = `${baseUrl}/users/email-verify?signupVerifyToken=${signupVerifyToken}`;
+
     const emailOptions: EmailOptions = {
       to: emailAddress,
       subject: '가입 인증 이메일', // 메일 제목

@@ -43,7 +43,7 @@ export class UsersService {
   async verifyEmail(signupVerifyToken: string):Promise<string> {
     // 1. 인증 처리 대기 중인 회원 조회 후 없으면 에러 처리
     // 2. 바로 로그인 상채가 되도록 JWT 발급
-    
+    return signupVerifyToken;
     throw new Error('Method not implemented.');
   }
 

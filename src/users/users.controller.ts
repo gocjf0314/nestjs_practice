@@ -20,20 +20,17 @@ export class UsersController {
   @Post()
   async createUser(@Body(ValidationPipe) dto: CreateUserDto): Promise<void> {
     const { name, email, password } = dto;
-    console.log(dto);
     await this.usersService.createUser(name, email, password);
   }
 
   @Post('/email-verify')
   async verifyEmail(@Query() dto: VerifyEmailDto): Promise<string> {
-    console.log(dto);
     const { signupVerifyToken } = dto;
     return await this.usersService.verifyEmail(signupVerifyToken);
   }
 
   @Post('/login')
   async login(@Query() dto: UserLoginDto): Promise<string> {
-    console.log(dto);
     const { email, password } = dto;
     return await this.usersService.login(email, password);
   }

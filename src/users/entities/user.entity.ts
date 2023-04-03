@@ -1,15 +1,19 @@
-import { UserType } from "../users.type";
+import { Column, Entity, PrimaryColumn } from "typeorm";
 
-export class User {
-    uid: string;
+@Entity('User')
+export class UserEntity {
+    @PrimaryColumn()
+    id: string;
+
+    @Column({length: 30})
     name: string;
-    email: string;
-    type: UserType;
 
-    constructor({uid, name, email, type}) {
-        this.uid = uid;
-        this.name = name;
-        this.email = email;
-        this.type = type;
-    };
+    @Column({length: 60})
+    email: string;
+
+    @Column({length: 30})
+    password: string;
+
+    @Column({length: 60})
+    signupVerifyToken: string;
 }

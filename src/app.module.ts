@@ -1,19 +1,19 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { ApiController } from './api/api.controller';
-import { EmailModule } from './email/email.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import emailConfig from './config/emailConfig';
 import { ValidationSchema } from './config/validationSchema';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './users/entities/user.entity';
+import { LoggerMiddleware } from './logger/logger.middleware';
+import { UsersController } from './users/users.controller';
 
 @Module({
   imports: [
     UsersModule,
-    EmailModule,
     ConfigModule.forRoot({
       envFilePath: [`${__dirname}/config/env/.${process.env.NODE_ENV}.env`],
       load: [emailConfig],
@@ -28,10 +28,20 @@ import { UserEntity } from './users/entities/user.entity';
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
       entities: [UserEntity],
-      synchronize: true,
+      // entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      synchronize: false,
+      migrationsRun: false,
+      migrations: [__dirname + '/**/migrations/*.js'],
+      migrationsTableName: 'migrations',
     }),
   ],
   controllers: [ApiController, AppController],
   providers: [AppService, ConfigService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): any {
+    consumer
+    .apply(LoggerMiddleware)
+    .forRoutes(UsersController);
+  }
+}

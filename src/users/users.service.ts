@@ -12,6 +12,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
 import { DataSource, Repository } from 'typeorm';
 import { ulid } from 'ulid';
+import { AuthService } from 'src/auth/auth.service';
+import { UserInfo } from './user.interface';
 
 @Injectable()
 export class UsersService {
@@ -19,6 +21,7 @@ export class UsersService {
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
     private emailService: EmailService,
+    private authService: AuthService,
     private dataSource: DataSource,
   ) {}
 
@@ -33,6 +36,7 @@ export class UsersService {
     }
 
     const signupVerifyToken = uuid.v1();
+    console.log('VerifyToken: ', signupVerifyToken);
 
     try {
       // await this.saveUserUsingQueryRunner(
@@ -127,25 +131,69 @@ export class UsersService {
 
   async verifyEmail(signupVerifyToken: string): Promise<string> {
     // 1. 인증 처리 대기 중인 회원 조회 후 없으면 에러 처리
-    // 2. 바로 로그인 상채가 되도록 JWT 발급
-    return signupVerifyToken;
-    throw new Error('Method not implemented.');
+    const user = await this.userRepository.findOne({
+      where: { signupVerifyToken },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Not exist user');
+    }
+
+    // 2. 바로 로그인 상태가 되도록 JWT 발급 후 반환
+    return this.authService.login({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    });
   }
 
   async login(email: string, password: string): Promise<string> {
-    // TODO
-    // 1. email, password를 가진 유저가 존재하는 지 확인 후 없으면 에러 처리
-    // 2. JWT 발급
+    const user = await this.userRepository.findOne({
+      where: { email, password },
+    });
 
-    throw new Error('Method not imoplmented.');
+    if(!user) {
+      throw new NotFoundException('Not exist user');
+    }
+
+    // JWT 발급
+    return this.authService.login({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    });
+  }
+
+  async getUserInfo(userId: string): Promise<UserInfo> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId }
+    });
+
+    if(!user) {
+      throw new NotFoundException(`Can not found user with ${userId}`);
+    }
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    };
   }
 
   findAll(offset: number, limit: number) {
     return `This action returns all users(offset ${offset}, limit: ${limit})`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  private async findOne(id: string): Promise<UserInfo> {
+    const user = await this.userRepository.findOne({
+      where: { id }
+    });
+
+    if(!user) {
+      throw new NotFoundException(`Can not found user with ${id}`);
+    }
+
+    return user;
   }
 
   findOneWithHeader(id: number) {

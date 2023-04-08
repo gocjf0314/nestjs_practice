@@ -7,17 +7,26 @@ import {
   Query,
   ParseIntPipe,
   ValidationPipe,
+  Headers,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { UserLoginDto } from './dto/user-login.dto';
+import { UserInfo } from './user.interface';
+import { AuhtGuard } from 'src/auth/auth.guard';
+import { Roles } from 'src/roles/role.decorator';
 
+@Roles('user')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+  ) {}
 
   @Post()
+  // @Roles('admin')
   async createUser(@Body(ValidationPipe) dto: CreateUserDto): Promise<void> {
     const { name, email, password } = dto;
     await this.usersService.createUser(name, email, password);
@@ -35,18 +44,17 @@ export class UsersController {
     return await this.usersService.login(email, password);
   }
 
+  @UseGuards(AuhtGuard)
   @Get(':id')
   async getUserInfo(
-    @Param(
-      'id',
-      ParseIntPipe,
-    )
-    id: number,
-  ): Promise<string> {
-    return this.usersService.findOne(id);
+    @Headers() headers: any,
+    @Param('id')
+    userId: string,
+  ): Promise<UserInfo> {
+    return this.usersService.getUserInfo(userId);
   }
 
-  @Get('')
+  @Get()
   findAllUsers(
     @Query('offset', ParseIntPipe) offset: number,
     @Query('limit', ParseIntPipe) limit: number,

@@ -9,6 +9,10 @@ import {
   ValidationPipe,
   Headers,
   UseGuards,
+  Inject,
+  Logger,
+  LoggerService,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -22,12 +26,26 @@ import { Roles } from 'src/roles/role.decorator';
 @Controller('users')
 export class UsersController {
   constructor(
+    @Inject(Logger) private readonly logger: LoggerService,
     private readonly usersService: UsersService,
   ) {}
 
+  private printLoggerServiceLog(dto) {
+    try {
+      throw new InternalServerErrorException('test');
+    } catch(e) {
+      this.logger.error('error: ' + JSON.stringify(dto), e.stack);
+    }
+    this.logger.error('warn: ' + JSON.stringify(dto));
+    this.logger.error('log: ' + JSON.stringify(dto));
+    this.logger.error('verbose: ' + JSON.stringify(dto));
+    this.logger.error('debug: ' + JSON.stringify(dto));
+  }
+
   @Post()
-  // @Roles('admin')
+  @Roles('admin')
   async createUser(@Body(ValidationPipe) dto: CreateUserDto): Promise<void> {
+    this.printLoggerServiceLog(dto);
     const { name, email, password } = dto;
     await this.usersService.createUser(name, email, password);
   }

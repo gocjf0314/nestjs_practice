@@ -13,6 +13,9 @@ import {
   Logger,
   LoggerService,
   InternalServerErrorException,
+  BadRequestException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -33,7 +36,7 @@ export class UsersController {
   private printLoggerServiceLog(dto) {
     try {
       throw new InternalServerErrorException('test');
-    } catch(e) {
+    } catch (e) {
       this.logger.error('error: ' + JSON.stringify(dto), e.stack);
     }
     this.logger.error('warn: ' + JSON.stringify(dto));
@@ -69,6 +72,16 @@ export class UsersController {
     @Param('id')
     userId: string,
   ): Promise<UserInfo> {
+    if (+userId < 1) {
+      throw new HttpException(
+        {
+          errorMessage: `userid는 0보다 큰 정수여야 합니다.`,
+          foo: 'bar',
+        }, 
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     return this.usersService.getUserInfo(userId);
   }
 
